@@ -1,6 +1,6 @@
 # Convert official BYOL weights to PyTorch
 
-Only supports ResNet-50 for now. Since the augmentation in PyTorch will be slightly different from the orignal, expect some differences in accuracy. I am not entirely sure about why the `crop_only` is 5 point worse. Original weights from [BYOL](https://github.com/deepmind/deepmind-research/tree/master/byol).
+Only supports ResNet-50 for now. Since the augmentation in PyTorch will be slightly different from the orignal, expect some differences in accuracy. I am not entirely sure about why the `crop_only` is 5 point worse. Original weights from [BYOL](https://github.com/deepmind/deepmind-research/tree/master/byol). This is a basic script which should generally work with most versions of `PyTorch` and `Torchvision`, but it's written with `PyTorch (1.4)` and `Torchvision (0.5)`.
 
 ```
 # convert the weights
