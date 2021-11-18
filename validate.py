@@ -23,6 +23,8 @@ parser.add_argument('wts', default='pretrain_res50x1.pth.tar', type=str,
         help='PyTorch weights to validate with imagenet validation set')
 parser.add_argument('valdir', default='/datasets/imagenet/val', type=str,
         help='path to imagenet val directory')
+parser.add_argument('model', default='resnet50', type=str,
+        help='Model name. Valid: resnet50, resnet200')
 
 
 def main():
@@ -44,7 +46,11 @@ def main():
         num_workers=8, pin_memory=True,
     )
 
-    model = resnet50(num_classes=1000).cuda()
+    if args.model.lower() == "resnet200":
+        model = resnet200(num_classes=1000).cuda()
+    else:
+        model = resnet50(num_classes=1000).cuda()
+
     state_dict = torch.load(args.wts)
     model.load_state_dict(state_dict)
 
@@ -152,4 +158,3 @@ def accuracy(output, target, topk=(1,)):
 
 if __name__ == '__main__':
     main()
-
