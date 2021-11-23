@@ -3,7 +3,7 @@ import re
 import dill
 import torch
 import numpy as np
-from resnet import resnet50
+from resnet import resnet50, resnet200
 
 
 parser = argparse.ArgumentParser(description='Convert BYOL weights from JAX/Haiku to PyTorch')
@@ -33,12 +33,12 @@ for k, v in zip(weights.keys(), weights.values()):
         continue
     f_k = k
     f_k = re.sub(
-        '.*block_group_([0-9]).*block_([0-9])/~/(conv|batchnorm)_([0-9])',
+        '.*block_group_([0-9]).*block_([0-9]*)/~/(conv|batchnorm)_([0-9])',
         lambda m: 'layer{}.{}.{}{}'.format(int(m[1])+1, int(m[2]), m[3], int(m[4])+1),
         f_k
     )
     f_k = re.sub(
-        '.*block_group_([0-9]).*block_([0-9])/~/shortcut_(conv|batchnorm)',
+        '.*block_group_([0-9]).*block_([0-9]*)/~/shortcut_(conv|batchnorm)',
         lambda m: 'layer{}.{}.{}'.format(int(m[1])+1, int(m[2]), 'downsample.' + m[3])\
             .replace('conv', '0').replace('batchnorm', '1'),
         f_k
@@ -73,12 +73,12 @@ for k, v in zip(bn_states.keys(), bn_states.values()):
         continue
     f_k = k
     f_k = re.sub(
-        '.*block_group_([0-9]).*block_([0-9])/~/(conv|batchnorm)_([0-9])',
+        '.*block_group_([0-9]).*block_([0-9]*)/~/(conv|batchnorm)_([0-9])',
         lambda m: 'layer{}.{}.{}{}'.format(int(m[1])+1, int(m[2]), m[3], int(m[4])+1),
         f_k
     )
     f_k = re.sub(
-        '.*block_group_([0-9]).*block_([0-9])/~/shortcut_(conv|batchnorm)',
+        '.*block_group_([0-9]).*block_([0-9]*)/~/shortcut_(conv|batchnorm)',
         lambda m: 'layer{}.{}.{}'.format(int(m[1])+1, int(m[2]), 'downsample.' + m[3])\
             .replace('conv', '0').replace('batchnorm', '1'),
         f_k
@@ -94,7 +94,11 @@ for k, v in zip(bn_states.keys(), bn_states.values()):
     assert np.abs(v['average'] - v['hidden']).sum() == 0
     state_dict[f_k] = torch.from_numpy(v['average']).squeeze()
 
-pt_state_dict = resnet50().state_dict()
+if 'res200' in args.byol_wts_path:
+    pt_state_dict = resnet200().state_dict()
+else:
+    pt_state_dict = resnet50().state_dict()
+
 pt_state_dict = {k: v for k, v in pt_state_dict.items() if 'tracked' not in k}
 
 assert len(pt_state_dict) == len(state_dict)
